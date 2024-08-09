@@ -16,6 +16,9 @@ villainImg2.src = 'villain2.png';
 const villainImg3 = new Image();
 villainImg3.src = 'villain3.png';
 
+const powerUpImg = new Image();
+powerUpImg.src = 'powerup.png';
+
 let rabbit = {
     x: canvas.width / 2,
     y: canvas.height - 50,
@@ -27,9 +30,12 @@ let rabbit = {
 
 let carrots = [];
 let villains = [];
+let powerUps = [];
 let villainSpeed = 2;
 let score = 0;
 let timeLeft = 20; // 20秒のタイマー
+let powerUpActive = false;
+let powerUpDuration = 10; // パワーアップの持続時間
 
 function drawRabbit() {
     ctx.drawImage(rabbitImg, rabbit.x, rabbit.y, rabbit.width, rabbit.height);
@@ -63,10 +69,39 @@ function drawVillains() {
     });
 }
 
+function drawPowerUps() {
+    powerUps.forEach((powerUp, index) => {
+        ctx.drawImage(powerUpImg, powerUp.x, powerUp.y, powerUp.width, powerUp.height);
+        powerUp.y += villainSpeed;
+
+        if (powerUp.y > canvas.height) {
+            powerUps.splice(index, 1);
+        }
+    });
+}
+
 function createVillain() {
     const x = Math.random() * (canvas.width - 50);
     const type = Math.floor(Math.random() * 3) + 1;
-    villains.push({ x: x, y: 0, width: 50, height: 50, type: type, hits: type });
+    let width, height;
+
+    if (type === 1) {
+        width = 50;
+        height = 50;
+    } else if (type === 2) {
+        width = 55;
+        height = 55;
+    } else if (type === 3) {
+        width = 65;
+        height = 65;
+    }
+
+    villains.push({ x: x, y: 0, width: width, height: height, type: type, hits: type });
+}
+
+function createPowerUp() {
+    const x = Math.random() * (canvas.width - 50);
+    powerUps.push({ x: x, y: 0, width: 50, height: 50 });
 }
 
 function moveRabbit() {
@@ -90,7 +125,7 @@ function detectCollisions() {
                 carrot.y < villain.y + villain.height &&
                 carrot.y + carrot.height > villain.y
             ) {
-                villain.hits -= 1;
+                villain.hits -= powerUpActive ? 2 : 1;
                 carrots.splice(carrotIndex, 1);
                 if (villain.hits <= 0) {
                     if (villain.type === 1) {
@@ -98,12 +133,27 @@ function detectCollisions() {
                     } else if (villain.type === 2) {
                         score += 20;
                     } else if (villain.type === 3) {
-                        score += 30;
+                        score += 50;
                     }
                     villains.splice(villainIndex, 1);
                 }
             }
         });
+    });
+
+    powerUps.forEach((powerUp, powerUpIndex) => {
+        if (
+            rabbit.x < powerUp.x + powerUp.width &&
+            rabbit.x + rabbit.width > powerUp.x &&
+            rabbit.y < powerUp.y + powerUp.height &&
+            rabbit.y + rabbit.height > powerUp.y
+        ) {
+            powerUps.splice(powerUpIndex, 1);
+            powerUpActive = true;
+            setTimeout(() => {
+                powerUpActive = false;
+            }, powerUpDuration * 1000);
+        }
     });
 }
 
@@ -124,6 +174,7 @@ function update() {
     drawRabbit();
     drawCarrots();
     drawVillains();
+    drawPowerUps();
     moveRabbit();
     detectCollisions();
     drawScore();
@@ -157,11 +208,27 @@ function keyUp(e) {
     }
 }
 
+function touchStart(e) {
+    const touchX = e.touches[0].clientX;
+    if (touchX > rabbit.x + rabbit.width / 2) {
+        rabbit.dx = rabbit.speed;
+    } else {
+        rabbit.dx = -rabbit.speed;
+    }
+}
+
+function touchEnd(e) {
+    rabbit.dx = 0;
+}
+
 window.onload = function() {
     document.addEventListener('keydown', keyDown);
     document.addEventListener('keyup', keyUp);
+    canvas.addEventListener('touchstart', touchStart);
+    canvas.addEventListener('touchend', touchEnd);
 
     setInterval(createVillain, 1000);
+    setTimeout(createPowerUp, 10000); // 10秒後にパワーアップアイテムを生成
     setInterval(() => {
         if (timeLeft > 0) {
             timeLeft--;
