@@ -16,8 +16,17 @@ villainImg2.src = 'villain2.png';
 const villainImg3 = new Image();
 villainImg3.src = 'villain3.png';
 
+const villainImg4 = new Image();
+villainImg4.src = 'villain4.png';
+
 const powerUpImg = new Image();
 powerUpImg.src = 'powerup.png';
+
+const gameOverImg = new Image();
+gameOverImg.src = 'gameover.png';
+
+const timeExtendImg = new Image();
+timeExtendImg.src = 'timeextend.png';
 
 let rabbit = {
     x: canvas.width / 2,
@@ -31,11 +40,16 @@ let rabbit = {
 let carrots = [];
 let villains = [];
 let powerUps = [];
+let gameOverItems = [];
+let timeExtendItems = [];
 let villainSpeed = 2;
 let score = 0;
 let timeLeft = 20; // 20秒のタイマー
 let powerUpActive = false;
 let powerUpDuration = 10; // パワーアップの持続時間
+let shotsFired = 0;
+let powerUpHits = 0;
+let timeExtended = false;
 
 function drawRabbit() {
     ctx.drawImage(rabbitImg, rabbit.x, rabbit.y, rabbit.width, rabbit.height);
@@ -60,6 +74,8 @@ function drawVillains() {
             ctx.drawImage(villainImg2, villain.x, villain.y, villain.width, villain.height);
         } else if (villain.type === 3) {
             ctx.drawImage(villainImg3, villain.x, villain.y, villain.width, villain.height);
+        } else if (villain.type === 4) {
+            ctx.drawImage(villainImg4, villain.x, villain.y, villain.width, villain.height);
         }
         villain.y += villainSpeed;
 
@@ -76,6 +92,28 @@ function drawPowerUps() {
 
         if (powerUp.y > canvas.height) {
             powerUps.splice(index, 1);
+        }
+    });
+}
+
+function drawGameOverItems() {
+    gameOverItems.forEach((item, index) => {
+        ctx.drawImage(gameOverImg, item.x, item.y, item.width, item.height);
+        item.y += villainSpeed;
+
+        if (item.y > canvas.height) {
+            gameOverItems.splice(index, 1);
+        }
+    });
+}
+
+function drawTimeExtendItems() {
+    timeExtendItems.forEach((item, index) => {
+        ctx.drawImage(timeExtendImg, item.x, item.y, item.width, item.height);
+        item.y += villainSpeed;
+
+        if (item.y > canvas.height) {
+            timeExtendItems.splice(index, 1);
         }
     });
 }
@@ -102,6 +140,16 @@ function createVillain() {
 function createPowerUp() {
     const x = Math.random() * (canvas.width - 50);
     powerUps.push({ x: x, y: 0, width: 50, height: 50 });
+}
+
+function createGameOverItem() {
+    const x = Math.random() * (canvas.width - 50);
+    gameOverItems.push({ x: x, y: 0, width: 50, height: 50 });
+}
+
+function createTimeExtendItem() {
+    const x = Math.random() * (canvas.width - 50);
+    timeExtendItems.push({ x: x, y: 0, width: 50, height: 50 });
 }
 
 function moveRabbit() {
@@ -134,27 +182,67 @@ function detectCollisions() {
                         score += 20;
                     } else if (villain.type === 3) {
                         score += 50;
+                    } else if (villain.type === 4) {
+                        score += 100;
                     }
                     villains.splice(villainIndex, 1);
                 }
             }
         });
+
+        powerUps.forEach((powerUp, powerUpIndex) => {
+            if (
+                carrot.x < powerUp.x + powerUp.width &&
+                carrot.x + carrot.width > powerUp.x &&
+                carrot.y < powerUp.y + powerUp.height &&
+                carrot.y + carrot.height > powerUp.y
+            ) {
+                powerUpHits++;
+                carrots.splice(carrotIndex, 1);
+                if (powerUpHits >= 5) {
+                    powerUps.splice(powerUpIndex, 1);
+                    powerUpActive = true;
+                    setTimeout(() => {
+                        powerUpActive = false;
+                    }, powerUpDuration * 1000);
+                }
+            }
+        });
     });
 
-    powerUps.forEach((powerUp, powerUpIndex) => {
+    gameOverItems.forEach((item, itemIndex) => {
         if (
-            rabbit.x < powerUp.x + powerUp.width &&
-            rabbit.x + rabbit.width > powerUp.x &&
-            rabbit.y < powerUp.y + powerUp.height &&
-            rabbit.y + rabbit.height > powerUp.y
+            rabbit.x < item.x + item.width &&
+            rabbit.x + rabbit.width > item.x &&
+            rabbit.y < item.y + item.height &&
+            rabbit.y + rabbit.height > item.y
         ) {
-            powerUps.splice(powerUpIndex, 1);
-            powerUpActive = true;
-            setTimeout(() => {
-                powerUpActive = false;
-            }, powerUpDuration * 1000);
+            alert('Game Over! Your score: ' + score);
+            document.location.reload();
         }
     });
+
+    timeExtendItems.forEach((item, itemIndex) => {
+        if (
+            rabbit.x < item.x + item.width &&
+            rabbit.x + rabbit.width > item.x &&
+            rabbit.y < item.y + item.height &&
+            rabbit.y + rabbit.height > item.y
+        ) {
+            timeExtendItems.splice(itemIndex, 1);
+            timeLeft += 10;
+            timeExtended = true;
+            setTimeout(() => {
+                timeExtended = false;
+            }, 1000);
+            setTimeout(createVillain4, 1000);
+        }
+    });
+}
+
+function createVillain4() {
+    const x = Math.random() * (canvas.width - 50);
+    villains.push({ x: x, y: 0, width: 65, height: 65, type: 4, hits: 10 });
 }
 
 function drawScore() {
@@ -164,8 +252,8 @@ function drawScore() {
 }
 
 function drawTime() {
-    ctx.fillStyle = 'black';
-    ctx.font = '20px Arial';
+    ctx.fillStyle = timeExtended ? 'red' : 'black';
+    ctx.font = timeExtended ? 'bold 20px Arial' : '20px Arial';
     ctx.fillText('Time: ' + timeLeft, 10, 50);
 }
 
@@ -175,6 +263,8 @@ function update() {
     drawCarrots();
     drawVillains();
     drawPowerUps();
+    drawGameOverItems();
+    drawTimeExtendItems();
     moveRabbit();
     detectCollisions();
     drawScore();
@@ -194,6 +284,10 @@ function keyDown(e) {
         rabbit.dx = -rabbit.speed;
     } else if (e.key === ' ') {
         carrots.push({ x: rabbit.x + rabbit.width / 2 - 15, y: rabbit.y, width: 30, height: 30, speed: 7 });
+        shotsFired++;
+        if (shotsFired >= 8 && !timeExtendItems.length) {
+            createTimeExtendItem();
+        }
     }
 }
 
@@ -228,6 +322,12 @@ window.onload = function() {
     canvas.addEventListener('touchend', touchEnd);
 
     setInterval(createVillain, 1000);
+    setInterval(createGameOverItem, 3000); // 3秒ごとに即時ゲームオーバーアイテムを生成
+    setTimeout(() => {
+        if (!timeExtendItems.length) {
+            createTimeExtendItem();
+        }
+    }, 13000); // 13秒後に時間延長アイテムを生成
     setTimeout(createPowerUp, 10000); // 10秒後にパワーアップアイテムを生成
     setInterval(() => {
         if (timeLeft > 0) {
