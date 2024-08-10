@@ -208,6 +208,18 @@ function detectCollisions() {
                 }
             }
         });
+
+        gameOverItems.forEach((item, itemIndex) => {
+            if (
+                carrot.x < item.x + item.width &&
+                carrot.x + carrot.width > item.x &&
+                carrot.y < item.y + item.height &&
+                carrot.y + carrot.height > item.y
+            ) {
+                alert('Game Over! Your score: ' + score);
+                document.location.reload();
+            }
+        });
     });
 
     gameOverItems.forEach((item, itemIndex) => {
