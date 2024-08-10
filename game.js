@@ -50,6 +50,7 @@ let powerUpDuration = 10; // パワーアップの持続時間
 let shotsFired = 0;
 let powerUpHits = 0;
 let timeExtended = false;
+let timeExtendItemCreated = false;
 
 function drawRabbit() {
     ctx.drawImage(rabbitImg, rabbit.x, rabbit.y, rabbit.width, rabbit.height);
@@ -148,8 +149,11 @@ function createGameOverItem() {
 }
 
 function createTimeExtendItem() {
-    const x = Math.random() * (canvas.width - 50);
-    timeExtendItems.push({ x: x, y: 0, width: 50, height: 50 });
+    if (!timeExtendItemCreated) {
+        const x = Math.random() * (canvas.width - 50);
+        timeExtendItems.push({ x: x, y: 0, width: 50, height: 50 });
+        timeExtendItemCreated = true;
+    }
 }
 
 function moveRabbit() {
@@ -335,12 +339,8 @@ window.onload = function() {
 
     setInterval(createVillain, 1000);
     setInterval(createGameOverItem, 3000); // 3秒ごとに即時ゲームオーバーアイテムを生成
-    setTimeout(() => {
-        if (!timeExtendItems.length) {
-            createTimeExtendItem();
-        }
-    }, 13000); // 13秒後に時間延長アイテムを生成
     setTimeout(createPowerUp, 10000); // 10秒後にパワーアップアイテムを生成
+    setTimeout(createTimeExtendItem, 13000); // 13秒後に時間延長アイテムを生成
     setInterval(() => {
         if (timeLeft > 0) {
             timeLeft--;
