@@ -51,6 +51,8 @@ let shotsFired = 0;
 let powerUpHits = 0;
 let timeExtended = false;
 let timeExtendItemCreated = false;
+let timeExtendHits = 0;
+let gameOver = false;
 
 function drawRabbit() {
     ctx.drawImage(rabbitImg, rabbit.x, rabbit.y, rabbit.width, rabbit.height);
@@ -220,8 +222,10 @@ function detectCollisions() {
                 carrot.y < item.y + item.height &&
                 carrot.y + carrot.height > item.y
             ) {
-                alert('Game Over! Your score: ' + score);
-                document.location.reload();
+                gameOver = true;
+                setTimeout(() => {
+                    document.location.reload();
+                }, 3000);
             }
         });
     });
@@ -233,8 +237,10 @@ function detectCollisions() {
             rabbit.y < item.y + item.height &&
             rabbit.y + rabbit.height > item.y
         ) {
-            alert('Game Over! Your score: ' + score);
-            document.location.reload();
+            gameOver = true;
+            setTimeout(() => {
+                document.location.reload();
+            }, 3000);
         }
     });
 
@@ -245,13 +251,17 @@ function detectCollisions() {
             rabbit.y < item.y + item.height &&
             rabbit.y + rabbit.height > item.y
         ) {
-            timeExtendItems.splice(itemIndex, 1);
-            timeLeft += 10;
-            timeExtended = true;
-            setTimeout(() => {
-                timeExtended = false;
-            }, 1000);
-            setTimeout(createVillain4, 1000);
+            timeExtendHits++;
+            carrots.splice(itemIndex, 1);
+            if (timeExtendHits >= 3) {
+                timeExtendItems.splice(itemIndex, 1);
+                timeLeft += 10;
+                timeExtended = true;
+                setTimeout(() => {
+                    timeExtended = false;
+                }, 1000);
+                setTimeout(createVillain4, 1000);
+            }
         }
     });
 }
@@ -273,6 +283,14 @@ function drawTime() {
     ctx.fillText('Time: ' + timeLeft, 10, 50);
 }
 
+function drawGameOver() {
+    if (gameOver) {
+        ctx.fillStyle = 'red';
+        ctx.font = 'bold 50px Arial';
+        ctx.fillText('GAME OVER', canvas.width / 2 - 150, canvas.height / 2);
+    }
+}
+
 function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawRabbit();
@@ -285,11 +303,15 @@ function update() {
     detectCollisions();
     drawScore();
     drawTime();
+    drawGameOver();
 
-    if (timeLeft > 0) {
+    if (timeLeft > 0 && !gameOver) {
         requestAnimationFrame(update);
-    } else {
-        alert('Game Over! Your score: ' + score);
+    } else if (timeLeft <= 0) {
+        gameOver = true;
+        setTimeout(() => {
+            document.location.reload();
+        }, 3000);
     }
 }
 
@@ -337,11 +359,4 @@ window.onload = function() {
     setInterval(createVillain, 1000);
     setInterval(createGameOverItem, 3000); // 3秒ごとに即時ゲームオーバーアイテムを生成
     setTimeout(createPowerUp, 10000); // 10秒後にパワーアップアイテムを生成
-    setTimeout(createTimeExtendItem, 13000); // 13秒後に時間延長アイテムを生成
-    setInterval(() => {
-        if (timeLeft > 0) {
-            timeLeft--;
-        }
-    }, 1000);
-    update();
-};
+    setTimeout(createTime
