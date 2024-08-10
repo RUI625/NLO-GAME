@@ -301,9 +301,6 @@ function keyDown(e) {
     } else if (e.key === ' ') {
         carrots.push({ x: rabbit.x + rabbit.width / 2 - 15, y: rabbit.y, width: 30, height: 30, speed: 7 });
         shotsFired++;
-        if (shotsFired >= 8 && !timeExtendItems.length) {
-            createTimeExtendItem();
-        }
     }
 }
 
