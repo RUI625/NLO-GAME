@@ -12,6 +12,7 @@
             align-items: center;
             height: 100vh;
             background-color: #87CEEB;
+            position: relative;
         }
         canvas {
             background: #87CEEB;
@@ -20,10 +21,24 @@
             max-width: 800px;
             height: auto;
         }
+        #attackButton {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none; /* PC版では非表示 */
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <button id="attackButton">Attack</button>
     <script src="game.js"></script>
 </body>
 </html>

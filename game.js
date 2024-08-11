@@ -1,5 +1,6 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const attackButton = document.getElementById('attackButton');
 
 const rabbitImg = new Image();
 rabbitImg.src = 'rabbit.png';
@@ -201,7 +202,7 @@ function detectCollisions() {
                 carrot.x < powerUp.x + powerUp.width &&
                 carrot.x + carrot.width > powerUp.x &&
                 carrot.y < powerUp.y + powerUp.height &&
-                carrot.y + carrot.height > powerUp.y
+                carrot.y + powerUp.height > powerUp.y
             ) {
                 powerUpHits++;
                 carrots.splice(carrotIndex, 1);
@@ -341,11 +342,22 @@ function touchEnd(e) {
     rabbit.dx = 0;
 }
 
+function shootCarrot() {
+    carrots.push({ x: rabbit.x + rabbit.width / 2 - 15, y: rabbit.y, width: 30, height: 30, speed: 7 });
+    shotsFired++;
+}
+
 window.onload = function() {
     document.addEventListener('keydown', keyDown);
     document.addEventListener('keyup', keyUp);
     canvas.addEventListener('touchstart', touchStart);
     canvas.addEventListener('touchend', touchEnd);
+
+    // モバイル版の攻撃ボタンの表示
+    if ('ontouchstart' in window) {
+        attackButton.style.display = 'block';
+        attackButton.addEventListener('click', shootCarrot);
+    }
 
     setInterval(createVillain, 1000);
     setInterval(createGameOverItem, 3000); // 3秒ごとに即時ゲームオーバーアイテムを生成
