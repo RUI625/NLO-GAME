@@ -223,9 +223,6 @@ function detectCollisions() {
                 carrot.y + carrot.height > item.y
             ) {
                 gameOver = true;
-                setTimeout(() => {
-                    document.location.reload();
-                }, 3000);
             }
         });
     });
@@ -238,9 +235,6 @@ function detectCollisions() {
             rabbit.y + rabbit.height > item.y
         ) {
             gameOver = true;
-            setTimeout(() => {
-                document.location.reload();
-            }, 3000);
         }
     });
 
@@ -309,9 +303,6 @@ function update() {
         requestAnimationFrame(update);
     } else if (timeLeft <= 0) {
         gameOver = true;
-        setTimeout(() => {
-            document.location.reload();
-        }, 3000);
     }
 }
 
