@@ -359,4 +359,11 @@ window.onload = function() {
     setInterval(createVillain, 1000);
     setInterval(createGameOverItem, 3000); // 3秒ごとに即時ゲームオーバーアイテムを生成
     setTimeout(createPowerUp, 10000); // 10秒後にパワーアップアイテムを生成
-    setTimeout(createTime
+    setTimeout(createTimeExtendItem, 13000); // 13秒後に時間延長アイテムを生成
+    setInterval(() => {
+        if (timeLeft > 0) {
+            timeLeft--;
+        }
+    }, 1000);
+    update();
+};
